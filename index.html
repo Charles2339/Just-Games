@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK-GAMING-ARCHIVE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:         #080C10;
+            --surface:    #0D1520;
+            --surface2:   #111B2A;
+            --border:     #1E3A5F;
+            --cyan:       #00D4FF;
+            --cyan-dim:   #00A8CC;
+            --cyan-glow:  rgba(0,212,255,0.18);
+            --cyan-glow2: rgba(0,212,255,0.06);
+            --text:       #E8F4F8;
+            --text-dim:   #7A9BB5;
+            --text-muted: #3A5A78;
+            --red:        #FF3860;
+            --green:      #00FF88;
+            --yellow:     #FFD700;
+            --purple:     #B829DD;
+            --purple-glow: rgba(184,41,221,0.18);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: var(--text);
+            padding-bottom: 80px;
+            position: relative;
+            overflow-x: hidden;
+            background-color: var(--bg);
+        }
+
+        #bg-overlay {
+            position: fixed; inset: 0; z-index: 1;
+            background: linear-gradient(160deg, rgba(8,12,16,0.92) 0%, rgba(8,12,16,0.85) 50%, rgba(8,12,16,0.95) 100%);
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 2; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
+        }
+        body::after {
+            content: ''; position: fixed; width: 600px; height: 600px;
+            top: -200px; left: -200px; z-index: 2; pointer-events: none;
+            background: radial-gradient(circle, rgba(0,212,255,0.05) 0%, transparent 70%);
+            animation: drift 12s ease-in-out infinite alternate;
+        }
+        @keyframes drift { 0% { transform: translate(0,0); } 100% { transform: translate(80px,60px); } }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px 16px; position: relative; z-index: 10; }
+
+        header {
+            text-align: center; padding: 32px 24px 24px;
+            background: rgba(13,21,32,0.85); backdrop-filter: blur(16px);
+            border-radius: 4px; margin-bottom: 16px;
+            border: 1px solid var(--border); border-top: 2px solid var(--cyan);
+            position: relative; overflow: hidden;
+        }
+        header::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            animation: scan-line 3s ease-in-out infinite;
+        }
+        @keyframes scan-line { 0%,100% { opacity:.4; } 50% { opacity:1; } }
+        .header-tag { font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--text-muted); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
+        .header-tag span { color:var(--cyan); }
+        h1 {
+            font-family:'JetBrains Mono',monospace; font-size:2.2rem; font-weight:700;
+            letter-spacing:8px; color:var(--text);
+            text-shadow: 0 0 10px var(--cyan), 0 0 30px var(--cyan-glow), 0 0 60px rgba(0,212,255,0.08);
+            animation: glitch 6s ease-in-out infinite; position:relative;
+        }
+        h1::before, h1::after { content:attr(data-text); position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; }
+        h1::before { color:var(--red); clip-path:inset(30% 0 50% 0); animation:glitch-top 6s ease-in-out infinite; }
+        h1::after  { color:var(--cyan); clip-path:inset(50% 0 20% 0); animation:glitch-bot 6s ease-in-out infinite; }
+        @keyframes glitch    { 0%,90%,100%{transform:none;} 92%{transform:skewX(-1deg);} 94%{transform:skewX(1deg);} 96%{transform:none;} }
+        @keyframes glitch-top{ 0%,90%,100%{opacity:0;transform:none;} 92%{opacity:.6;transform:translate(-2px,0);} 94%{opacity:0;} }
+        @keyframes glitch-bot{ 0%,91%,100%{opacity:0;transform:none;} 93%{opacity:.5;transform:translate(2px,0);}  95%{opacity:0;} }
+        .subtitle { font-family:'JetBrains Mono',monospace; font-size:.8rem; color:var(--cyan); letter-spacing:4px; text-transform:uppercase; margin-top:8px; opacity:.85; }
+        .header-stats { display:flex; justify-content:center; gap:32px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
+        .stat { font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--text-muted); text-align:center; }
+        .stat-val { display:block; font-size:1.1rem; font-weight:600; color:var(--cyan); margin-bottom:2px; }
+
+        .admin-toggle {
+            position: fixed; top: 16px; right: 16px; z-index: 1000;
+            background: rgba(13,21,32,0.9); border: 1px solid var(--border);
+            border-radius: 4px; padding: 8px 12px; cursor: pointer;
+            font-family: 'JetBrains Mono', monospace; font-size: .65rem;
+            color: var(--text-muted); letter-spacing: 1px;
+            transition: all .2s;
+        }
+        .admin-toggle:hover { color: var(--cyan); border-color: var(--cyan); }
+
+        .search-container { position:relative; margin-bottom:16px; }
+        .search-input {
+            width:100%; padding:13px 18px 13px 46px;
+            background:var(--surface); border:1px solid var(--border); border-radius:4px;
+            color:var(--text); font-family:'JetBrains Mono',monospace; font-size:.88rem;
+            outline:none; transition:all .25s ease; letter-spacing:.5px;
+        }
+        .search-input::placeholder { color:var(--text-muted); }
+        .search-input:focus { border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan),0 0 20px var(--cyan-glow); background:var(--surface2); }
+        .search-icon { position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:1.1rem; pointer-events:none; transition:color .25s; }
+        .search-container:focus-within .search-icon { color:var(--cyan); }
+
+        .game-count {
+            font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--text-muted);
+            letter-spacing:2px; text-transform:uppercase; margin-bottom:14px; padding:0 4px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .game-count::before { content:''; display:inline-block; width:20px; height:1px; background:var(--border); }
+
+        .games-list { display:flex; flex-direction:column; gap:16px; }
+        
+        .game-card {
+            background:rgba(13,21,32,0.80); backdrop-filter:blur(10px);
+            border:1px solid var(--border); border-radius:4px;
+            overflow:hidden; transition:border-color .2s, box-shadow .2s;
+        }
+        .game-card:hover { border-color:rgba(0,212,255,0.4); box-shadow:0 0 20px var(--cyan-glow2); }
+
+        /* ── SCREENSHOT GALLERY ─────────────────────────────────────── */
+        .screenshot-gallery {
+            position: relative; width: 100%; height: 200px;
+            background: var(--surface); overflow: hidden;
+        }
+        .screenshot-track {
+            display: flex; height: 100%;
+            transition: transform 0.3s ease;
+            cursor: grab;
+        }
+        .screenshot-track:active { cursor: grabbing; }
+        .screenshot-slide {
+            min-width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--surface2);
+        }
+        .screenshot-slide img {
+            max-width: 100%; max-height: 100%;
+            object-fit: contain; pointer-events: none;
+        }
+        .screenshot-dots {
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 6px; z-index: 5;
+        }
+        .screenshot-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--text-muted); opacity: 0.5;
+            transition: all .2s; cursor: pointer;
+        }
+        .screenshot-dot.active { background: var(--cyan); opacity: 1; box-shadow: 0 0 6px var(--cyan); }
+        
+        .screenshot-nav {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(8,12,16,0.7); border: 1px solid var(--border);
+            color: var(--text); width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 3px; cursor: pointer; z-index: 5;
+            font-size: 1.2rem; opacity: 0; transition: opacity .2s;
+        }
+        .screenshot-gallery:hover .screenshot-nav { opacity: 1; }
+        .screenshot-nav:hover { background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
+        .screenshot-nav.prev { left: 8px; }
+        .screenshot-nav.next { right: 8px; }
+
+        .game-info { padding: 14px 16px; }
+        .game-title { font-size:1rem; font-weight:600; color:var(--text); margin-bottom:4px; }
+        .game-meta { font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--text-muted); letter-spacing:1px; margin-bottom:10px; }
+        .game-desc { font-size:.82rem; color:var(--text-dim); line-height:1.5; margin-bottom:12px; }
+
+        .game-actions { display:flex; gap:8px; }
+        .btn {
+            padding:8px 16px; border:none; border-radius:3px; cursor:pointer;
+            font-family:'JetBrains Mono',monospace; font-size:.75rem; font-weight:600;
+            letter-spacing:1px; transition:all .2s ease; display:flex; align-items:center;
+            gap:6px; text-decoration:none; white-space:nowrap;
+        }
+        .btn-download { background:transparent; color:var(--cyan); border:1px solid var(--cyan); flex:1; justify-content:center; }
+        .btn-download:hover { background:var(--cyan); color:var(--bg); box-shadow:0 0 20px var(--cyan-glow); }
+        .btn-download svg { width:14px; height:14px; flex-shrink:0; }
+
+        /* ── ADMIN PANEL ────────────────────────────────────────────── */
+        .admin-panel {
+            display: none;
+            background: rgba(13,21,32,0.95); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 4px;
+            padding: 20px; margin-bottom: 16px;
+        }
+        .admin-panel.active { display: block; }
+        .admin-panel h3 {
+            font-family: 'JetBrains Mono', monospace; font-size: .9rem;
+            color: var(--cyan); letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+        }
+        .admin-field { margin-bottom: 14px; }
+        .admin-field label {
+            display: block; font-family: 'JetBrains Mono', monospace;
+            font-size: .65rem; color: var(--text-muted);
+            letter-spacing: 1px; text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .admin-field input, .admin-field textarea {
+            width: 100%; padding: 10px 12px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 3px; color: var(--text);
+            font-family: 'Inter', sans-serif; font-size: .85rem;
+            outline: none; transition: all .2s;
+        }
+        .admin-field input:focus, .admin-field textarea:focus {
+            border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan);
+        }
+        .admin-field textarea { min-height: 80px; resize: vertical; }
+        
+        .screenshot-upload {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .screenshot-upload .screenshot-preview {
+            width: 80px; height: 80px; border: 1px dashed var(--border);
+            border-radius: 3px; display: flex; align-items: center;
+            justify-content: center; color: var(--text-muted);
+            font-size: 1.5rem; cursor: pointer; transition: all .2s;
+            position: relative; overflow: hidden;
+        }
+        .screenshot-upload .screenshot-preview:hover {
+            border-color: var(--cyan); color: var(--cyan);
+        }
+        .screenshot-upload .screenshot-preview img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .screenshot-upload .screenshot-preview .remove {
+            position: absolute; top: 2px; right: 2px;
+            background: var(--red); color: var(--bg);
+            width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .7rem; cursor: pointer; opacity: 0; transition: opacity .2s;
+        }
+        .screenshot-upload .screenshot-preview:hover .remove { opacity: 1; }
+
+        .btn-post {
+            width: 100%; padding: 12px;
+            background: var(--cyan); color: var(--bg);
+            border: none; border-radius: 3px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .8rem; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; transition: all .2s;
+        }
+        .btn-post:hover {
+            background: var(--cyan-dim);
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+        .btn-post:disabled {
+            opacity: 0.5; cursor: not-allowed;
+        }
+
+        .loading { text-align:center; padding:50px 20px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; font-size:.8rem; letter-spacing:1px; }
+        .spinner { display:inline-block; width:28px; height:28px; border:1px solid var(--border); border-top-color:var(--cyan); border-radius:50%; animation:spin .9s linear infinite; margin-bottom:14px; box-shadow:0 0 10px var(--cyan-glow); }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .empty-state { text-align:center; padding:50px 20px; font-family:'JetBrains Mono',monospace; color:var(--text-muted); font-size:.8rem; }
+        .empty-state-icon { font-size:2.5rem; margin-bottom:14px; opacity:.4; }
+        .empty-state h3 { color:var(--text-dim); margin-bottom:8px; font-size:.9rem; }
+
+        .site-footer {
+            text-align: center; padding: 24px 16px;
+            font-family: 'JetBrains Mono', monospace; font-size: .65rem;
+            color: var(--text-muted); letter-spacing: 2px;
+            text-transform: uppercase; border-top: 1px solid var(--border);
+            margin-top: 24px; position: relative; z-index: 10;
+        }
+        .site-footer span { color: var(--cyan); opacity: .7; }
+
+        @media (max-width:640px) {
+            h1 { font-size:1.6rem; letter-spacing:4px; }
+            .header-stats { gap:14px; flex-wrap:wrap; justify-content:center; }
+            .btn { padding:7px 12px; font-size:.7rem; }
+            .screenshot-gallery { height: 160px; }
+        }
+        @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
+    </style>
+</head>
+<body>
+    <div id="bg-overlay"></div>
+
+    <button class="admin-toggle" id="adminToggle" onclick="toggleAdmin()">⚙ SETTINGS</button>
+
+    <div class="container">
+        <header>
+            <div class="header-tag">[ <span>sys://mkdev.games</span> ] — initialized</div>
+            <h1 data-text="MK-GAMING-ARCHIVE">MK-GAMING-ARCHIVE</h1>
+            <p class="subtitle">Indie · Retro · Mods</p>
+            <div class="header-stats">
+                <div class="stat"><span class="stat-val" id="statTotal">—</span>games loaded</div>
+                <div class="stat"><span class="stat-val" id="statNow">—</span>available</div>
+            </div>
+        </header>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel" id="adminPanel">
+            <h3>⚡ Admin Mode</h3>
+            <div class="admin-field">
+                <label>GitHub Repo (e.g., Charles2339/Just-Games)</label>
+                <input type="text" id="adminRepo" placeholder="username/repo-name">
+            </div>
+            <div class="admin-field">
+                <label>GitHub Token (classic, with repo scope)</label>
+                <input type="password" id="adminToken" placeholder="ghp_xxxxxxxxxxxx">
+            </div>
+            <div class="admin-field">
+                <label>Game Name</label>
+                <input type="text" id="gameName" placeholder="e.g., Celeste Classic">
+            </div>
+            <div class="admin-field">
+                <label>Description</label>
+                <textarea id="gameDesc" placeholder="Short description of the game..."></textarea>
+            </div>
+            <div class="admin-field">
+                <label>Download Link (MEGA, mediafire, etc.)</label>
+                <input type="url" id="gameLink" placeholder="https://mega.nz/file/...">
+            </div>
+            <div class="admin-field">
+                <label>Screenshots (2-5 images, drag or click)</label>
+                <div class="screenshot-upload" id="screenshotUpload">
+                    <div class="screenshot-preview" onclick="document.getElementById('screenshotInput').click()">
+                        <span>+</span>
+                    </div>
+                </div>
+                <input type="file" id="screenshotInput" accept="image/*" multiple style="display:none" onchange="handleScreenshots(this)">
+            </div>
+            <button class="btn-post" id="postBtn" onclick="postGame()">POST</button>
+            <div id="postStatus" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);"></div>
+        </div>
+
+        <div class="search-container">
+            <span class="search-icon">⌕</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="search games...">
+        </div>
+
+        <div class="game-count" id="gameCount">scanning archive...</div>
+        <div class="games-list" id="gamesList">
+            <div class="loading"><div class="spinner"></div><p>loading game matrix...</p></div>
+        </div>
+
+        <footer class="site-footer"><span>©2026 MKDEV</span></footer>
+    </div>
+
+    <script>
+    // ── CONFIG ────────────────────────────────────────────────────────
+    const CONFIG = {
+        owner: 'Charles2339',
+        repo:  'Just-Games',
+        branch: 'main',
+        gamesJson: 'games.json'
+    };
+
+    let games = [];
+    let adminScreenshots = [];
+    let isAdmin = false;
+
+    const searchInput = document.getElementById('searchInput');
+    const gamesList   = document.getElementById('gamesList');
+    const gameCount   = document.getElementById('gameCount');
+    const statTotal   = document.getElementById('statTotal');
+    const statNow     = document.getElementById('statNow');
+    const adminPanel  = document.getElementById('adminPanel');
+    const adminToggle = document.getElementById('adminToggle');
+
+    // ── LOAD GAMES ───────────────────────────────────────────────────
+    async function loadGames() {
+        try {
+            const url = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.gamesJson}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('No games.json yet');
+            games = await res.json();
+        } catch (e) {
+            games = [];
+        }
+        statTotal.textContent = games.length;
+        statNow.textContent = games.length;
+        displayGames(games);
+    }
+
+    function displayGames(list) {
+        if (!list.length) {
+            gamesList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#9678;</div><h3>No games</h3><p>Archive is empty. Use Settings to add games.</p></div>`;
+            gameCount.textContent = '0 games found';
+            return;
+        }
+        
+        gamesList.innerHTML = list.map((game, i) => `
+            <div class="game-card" data-index="${i}">
+                ${renderGallery(game.screenshots, i)}
+                <div class="game-info">
+                    <div class="game-title">${escapeHtml(game.name)}</div>
+                    <div class="game-meta">${game.platform || 'PC'} · ${formatSize(game.size)} · ${timeAgo(game.uploaded)}</div>
+                    <div class="game-desc">${escapeHtml(game.description || 'No description available.')}</div>
+                    <div class="game-actions">
+                        <a href="${game.downloadUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-download">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M6 11l6 6 6-6"/><path d="M3 20h18"/></svg>
+                            DOWNLOAD
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        gameCount.textContent = `${list.length} game${list.length !== 1 ? 's' : ''} indexed`;
+        
+        // Init galleries after render
+        list.forEach((game, i) => initGallery(i));
+    }
+
+    function renderGallery(screenshots, gameIndex) {
+        if (!screenshots || !screenshots.length) {
+            return `<div class="screenshot-gallery" style="display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:.7rem;">NO SCREENSHOTS</div>`;
+        }
+        
+        const slides = screenshots.map((url, si) => `
+            <div class="screenshot-slide" data-slide="${si}">
+                <img src="${url}" alt="Screenshot ${si+1}" loading="lazy">
+            </div>
+        `).join('');
+        
+        const dots = screenshots.map((_, si) => `
+            <div class="screenshot-dot ${si === 0 ? 'active' : ''}" data-dot="${si}" onclick="goToSlide(${gameIndex}, ${si})"></div>
+        `).join('');
+        
+        return `
+            <div class="screenshot-gallery" id="gallery-${gameIndex}">
+                <div class="screenshot-track" id="track-${gameIndex}">${slides}</div>
+                <div class="screenshot-dots">${dots}</div>
+                ${screenshots.length > 1 ? `
+                    <div class="screenshot-nav prev" onclick="prevSlide(${gameIndex})">&#9664;</div>
+                    <div class="screenshot-nav next" onclick="nextSlide(${gameIndex})">&#9654;</div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // ── GALLERY SWIPE ────────────────────────────────────────────────
+    const galleryState = {};
+
+    function initGallery(index) {
+        const track = document.getElementById(`track-${index}`);
+        if (!track) return;
+        
+        galleryState[index] = { current: 0, touchStart: 0 };
+        const gallery = document.getElementById(`gallery-${index}`);
+        const slides = gallery.querySelectorAll('.screenshot-slide');
+        galleryState[index].max = slides.length - 1;
+        
+        // Touch swipe
+        gallery.addEventListener('touchstart', e => {
+            galleryState[index].touchStart = e.touches[0].clientX;
+        }, { passive: true });
+        
+        gallery.addEventListener('touchend', e => {
+            const diff = galleryState[index].touchStart - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                diff > 0 ? nextSlide(index) : prevSlide(index);
+            }
+        }, { passive: true });
+        
+        // Mouse drag
+        let isDragging = false, startX = 0;
+        gallery.addEventListener('mousedown', e => {
+            isDragging = true; startX = e.clientX;
+            track.style.cursor = 'grabbing';
+        });
+        gallery.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            e.preventDefault();
+        });
+        gallery.addEventListener('mouseup', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            track.style.cursor = 'grab';
+            const diff = startX - e.clientX;
+            if (Math.abs(diff) > 50) {
+                diff > 0 ? nextSlide(index) : prevSlide(index);
+            }
+        });
+        gallery.addEventListener('mouseleave', () => {
+            isDragging = false;
+            track.style.cursor = 'grab';
+        });
+    }
+
+    function goToSlide(galleryIndex, slideIndex) {
+        const state = galleryState[galleryIndex];
+        if (!state) return;
+        state.current = Math.max(0, Math.min(slideIndex, state.max));
+        updateGallery(galleryIndex);
+    }
+
+    function nextSlide(index) {
+        const state = galleryState[index];
+        if (!state || state.current >= state.max) return;
+        state.current++;
+        updateGallery(index);
+    }
+
+    function prevSlide(index) {
+        const state = galleryState[index];
+        if (!state || state.current <= 0) return;
+        state.current--;
+        updateGallery(index);
+    }
+
+    function updateGallery(index) {
+        const track = document.getElementById(`track-${index}`);
+        const dots = document.querySelectorAll(`#gallery-${index} .screenshot-dot`);
+        if (!track) return;
+        
+        track.style.transform = `translateX(-${galleryState[index].current * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === galleryState[index].current));
+    }
+
+    // ── ADMIN MODE ───────────────────────────────────────────────────
+    function toggleAdmin() {
+        isAdmin = !isAdmin;
+        adminPanel.classList.toggle('active', isAdmin);
+        adminToggle.textContent = isAdmin ? '✕ CLOSE' : '⚙ SETTINGS';
+        adminToggle.style.color = isAdmin ? 'var(--red)' : '';
+    }
+
+    function handleScreenshots(input) {
+        const files = Array.from(input.files);
+        const container = document.getElementById('screenshotUpload');
+        
+        files.forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                adminScreenshots.push({ file, dataUrl: e.target.result });
+                renderScreenshotPreviews();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function renderScreenshotPreviews() {
+        const container = document.getElementById('screenshotUpload');
+        container.innerHTML = adminScreenshots.map((s, i) => `
+            <div class="screenshot-preview">
+                <img src="${s.dataUrl}" alt="Preview">
+                <div class="remove" onclick="removeScreenshot(${i})">×</div>
+            </div>
+        `).join('') + `
+            <div class="screenshot-preview" onclick="document.getElementById('screenshotInput').click()">
+                <span>+</span>
+            </div>
+        `;
+    }
+
+    function removeScreenshot(index) {
+        adminScreenshots.splice(index, 1);
+        renderScreenshotPreviews();
+    }
+
+    async function postGame() {
+        const repo = document.getElementById('adminRepo').value.trim();
+        const token = document.getElementById('adminToken').value.trim();
+        const name = document.getElementById('gameName').value.trim();
+        const desc = document.getElementById('gameDesc').value.trim();
+        const link = document.getElementById('gameLink').value.trim();
+        const status = document.getElementById('postStatus');
+        const btn = document.getElementById('postBtn');
+        
+        if (!repo || !token || !name || !link) {
+            status.innerHTML = '<span style="color:var(--red)">Fill all required fields</span>';
+            return;
+        }
+        
+        btn.disabled = true;
+        status.innerHTML = '<span style="color:var(--cyan)">Uploading screenshots...</span>';
+        
+        try {
+            // Upload screenshots to repo
+            const screenshotUrls = [];
+            for (let i = 0; i < adminScreenshots.length; i++) {
+                const s = adminScreenshots[i];
+                const base64 = s.dataUrl.split(',')[1];
+                const path = `screenshots/${name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}/${Date.now()}-${i}.jpg`;
+                
+                const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Add screenshot for ${name}`,
+                        content: base64
+                    })
+                });
+                
+                if (!res.ok) throw new Error(`Screenshot ${i+1} failed`);
+                const data = await res.json();
+                screenshotUrls.push(data.content.download_url);
+            }
+            
+            // Fetch current games.json
+            status.innerHTML = '<span style="color:var(--cyan)">Updating games.json...</span>';
+            let currentGames = [];
+            let sha = null;
+            
+            try {
+                const res = await fetch(`https://api.github.com/repos/${repo}/contents/${CONFIG.gamesJson}?ref=${CONFIG.branch}`, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    sha = data.sha;
+                    currentGames = JSON.parse(atob(data.content));
+                }
+            } catch (e) { /* no games.json yet */ }
+            
+            // Add new game
+            currentGames.push({
+                name,
+                description: desc,
+                downloadUrl: link,
+                screenshots: screenshotUrls,
+                platform: 'PC',
+                size: 0,
+                uploaded: new Date().toISOString()
+            });
+            
+            // Push updated games.json
+            const updateRes = await fetch(`https://api.github.com/repos/${repo}/contents/${CONFIG.gamesJson}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Add game: ${name}`,
+                    content: btoa(JSON.stringify(currentGames, null, 2)),
+                    sha: sha
+                })
+            });
+            
+            if (!updateRes.ok) throw new Error('Failed to update games.json');
+            
+            status.innerHTML = '<span style="color:var(--green)">✓ Posted successfully! Reloading...</span>';
+            setTimeout(() => location.reload(), 2000);
+            
+        } catch (e) {
+            status.innerHTML = `<span style="color:var(--red)">✗ ${e.message}</span>`;
+            btn.disabled = false;
+        }
+    }
+
+    // ── UTILS ────────────────────────────────────────────────────────
+    function escapeHtml(t) {
+        const d = document.createElement('div');
+        d.textContent = t;
+        return d.innerHTML;
+    }
+
+    function formatSize(bytes) {
+        if (!bytes) return 'N/A';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+        return (bytes/(1024*1024)).toFixed(1) + ' MB';
+    }
+
+    function timeAgo(dateStr) {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        if (seconds < 60) return 'just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return minutes + 'm ago';
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return hours + 'h ago';
+        const days = Math.floor(hours / 24);
+        if (days < 30) return days + 'd ago';
+        const months = Math.floor(days / 30);
+        if (months < 12) return months + 'mo ago';
+        return Math.floor(months / 12) + 'y ago';
+    }
+
+    searchInput.addEventListener('input', e => {
+        const q = e.target.value.toLowerCase().trim();
+        displayGames(q ? games.filter(g => g.name.toLowerCase().includes(q)) : games);
+    });
+
+    // ── INIT ─────────────────────────────────────────────────────────
+    loadGames();
+    </script>
+</body>
+</html>
