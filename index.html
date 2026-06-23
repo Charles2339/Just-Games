@@ -88,7 +88,7 @@
         .stat { font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--text-muted); text-align:center; }
         .stat-val { display:block; font-size:1.1rem; font-weight:600; color:var(--cyan); margin-bottom:2px; }
 
-        .admin-toggle {
+        .settings-toggle {
             position: fixed; top: 16px; right: 16px; z-index: 1000;
             background: rgba(13,21,32,0.9); border: 1px solid var(--border);
             border-radius: 4px; padding: 8px 12px; cursor: pointer;
@@ -96,7 +96,7 @@
             color: var(--text-muted); letter-spacing: 1px;
             transition: all .2s;
         }
-        .admin-toggle:hover { color: var(--cyan); border-color: var(--cyan); }
+        .settings-toggle:hover { color: var(--cyan); border-color: var(--cyan); }
 
         .search-container { position:relative; margin-bottom:16px; }
         .search-input {
@@ -128,12 +128,12 @@
 
         /* ── SCREENSHOT GALLERY ─────────────────────────────────────── */
         .screenshot-gallery {
-            position: relative; width: 100%; height: 200px;
+            position: relative; width: 100%; height: 220px;
             background: var(--surface); overflow: hidden;
         }
         .screenshot-track {
             display: flex; height: 100%;
-            transition: transform 0.3s ease;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: grab;
         }
         .screenshot-track:active { cursor: grabbing; }
@@ -141,13 +141,16 @@
             min-width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
             background: var(--surface2);
+            position: relative;
         }
         .screenshot-slide img {
             max-width: 100%; max-height: 100%;
             object-fit: contain; pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
         }
         .screenshot-dots {
-            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 6px; z-index: 5;
         }
         .screenshot-dot {
@@ -160,18 +163,25 @@
         .screenshot-nav {
             position: absolute; top: 50%; transform: translateY(-50%);
             background: rgba(8,12,16,0.7); border: 1px solid var(--border);
-            color: var(--text); width: 32px; height: 32px;
+            color: var(--text); width: 36px; height: 36px;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 3px; cursor: pointer; z-index: 5;
-            font-size: 1.2rem; opacity: 0; transition: opacity .2s;
+            border-radius: 4px; cursor: pointer; z-index: 5;
+            font-size: 1.2rem; opacity: 0; transition: opacity .25s, background .2s, border-color .2s;
         }
         .screenshot-gallery:hover .screenshot-nav { opacity: 1; }
         .screenshot-nav:hover { background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
-        .screenshot-nav.prev { left: 8px; }
-        .screenshot-nav.next { right: 8px; }
+        .screenshot-nav.prev { left: 10px; }
+        .screenshot-nav.next { right: 10px; }
+        .screenshot-counter {
+            position: absolute; bottom: 10px; right: 12px;
+            background: rgba(8,12,16,0.7); border: 1px solid var(--border);
+            border-radius: 4px; padding: 3px 8px;
+            font-family: 'JetBrains Mono', monospace; font-size: .6rem;
+            color: var(--text-muted); z-index: 5;
+        }
 
         .game-info { padding: 14px 16px; }
-        .game-title { font-size:1rem; font-weight:600; color:var(--text); margin-bottom:4px; }
+        .game-title { font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:4px; }
         .game-meta { font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--text-muted); letter-spacing:1px; margin-bottom:10px; }
         .game-desc { font-size:.82rem; color:var(--text-dim); line-height:1.5; margin-bottom:12px; }
 
@@ -186,37 +196,129 @@
         .btn-download:hover { background:var(--cyan); color:var(--bg); box-shadow:0 0 20px var(--cyan-glow); }
         .btn-download svg { width:14px; height:14px; flex-shrink:0; }
 
-        /* ── ADMIN PANEL ────────────────────────────────────────────── */
-        .admin-panel {
+        /* ── SETTINGS MODAL ─────────────────────────────────────────── */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(8,12,16,0.7);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; backdrop-filter: blur(8px);
+        }
+        .overlay.open { display: flex; }
+        .modal {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; width: 92%; max-width: 520px;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(0,212,255,0.08);
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: none; } }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; background: var(--surface); z-index: 1;
+        }
+        .modal-header h3 {
+            font-family: 'JetBrains Mono', monospace; font-size: .85rem;
+            color: var(--cyan); letter-spacing: 2px; text-transform: uppercase;
+        }
+        .modal-close {
+            width: 28px; height: 28px; border-radius: 6px;
+            border: none; background: none; color: var(--text-muted);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.12s, color 0.12s;
+        }
+        .modal-close:hover { background: var(--surface2); color: var(--text); }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+        .setting-group label {
+            display: block; font-family: 'JetBrains Mono', monospace;
+            font-size: .6rem; color: var(--text-muted);
+            letter-spacing: 1.5px; text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .setting-group input, .setting-group textarea {
+            width: 100%; padding: 10px 12px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 4px; color: var(--text);
+            font-family: 'Inter', sans-serif; font-size: .85rem;
+            outline: none; transition: all .2s;
+        }
+        .setting-group input:focus, .setting-group textarea:focus {
+            border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan);
+        }
+        .setting-group textarea { min-height: 80px; resize: vertical; }
+        .setting-group .desc {
+            font-size: .75rem; color: var(--text-muted); margin-top: 6px; line-height: 1.5;
+        }
+        
+        .admin-section { margin-top: 8px; }
+        .admin-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 3px 10px; border-radius: 20px; font-size: .65rem; font-weight: 600;
+        }
+        .admin-badge.disabled { background: rgba(255,56,96,0.1); color: var(--red); border: 1px solid rgba(255,56,96,0.2); }
+        .admin-badge.active { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+        
+        .admin-btn {
+            padding: 9px 16px; background: var(--cyan-glow); border: 1px solid var(--cyan);
+            border-radius: 4px; color: var(--cyan); font-family: 'JetBrains Mono', monospace;
+            font-size: .7rem; font-weight: 600; letter-spacing: 1px; cursor: pointer;
+            transition: all .15s; margin-top: 10px;
+        }
+        .admin-btn:hover { background: var(--cyan); color: var(--bg); }
+        .admin-btn-sm {
+            padding: 7px 14px; background: var(--cyan); border: none; border-radius: 4px;
+            color: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: .7rem;
+            font-weight: 600; cursor: pointer; transition: opacity .15s; flex-shrink: 0;
+        }
+        .admin-btn-sm:hover { opacity: .85; }
+        .admin-btn-danger {
+            padding: 6px 12px; background: rgba(255,56,96,0.1); border: 1px solid rgba(255,56,96,0.3);
+            border-radius: 4px; color: var(--red); font-size: .7rem; font-family: 'JetBrains Mono', monospace;
+            cursor: pointer; transition: background .15s;
+        }
+        .admin-btn-danger:hover { background: rgba(255,56,96,0.2); }
+        .admin-input-row { display: flex; gap: 8px; margin-top: 8px; }
+        .admin-input { flex: 1; }
+        .admin-active-row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; padding: 10px 12px; background: rgba(0,255,136,0.06);
+            border: 1px solid rgba(0,255,136,0.15); border-radius: 6px;
+            font-size: .8rem; color: var(--text); margin-top: 8px;
+        }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+        /* ── POST PANEL (Admin Only) ────────────────────────────────── */
+        .post-panel {
             display: none;
             background: rgba(13,21,32,0.95); backdrop-filter: blur(20px);
             border: 1px solid var(--border); border-radius: 4px;
             padding: 20px; margin-bottom: 16px;
+            animation: fadeIn 0.3s ease;
         }
-        .admin-panel.active { display: block; }
-        .admin-panel h3 {
+        .post-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+        .post-panel h3 {
             font-family: 'JetBrains Mono', monospace; font-size: .9rem;
             color: var(--cyan); letter-spacing: 2px; text-transform: uppercase;
             margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
         }
-        .admin-field { margin-bottom: 14px; }
-        .admin-field label {
+        .post-field { margin-bottom: 14px; }
+        .post-field label {
             display: block; font-family: 'JetBrains Mono', monospace;
             font-size: .65rem; color: var(--text-muted);
             letter-spacing: 1px; text-transform: uppercase;
             margin-bottom: 6px;
         }
-        .admin-field input, .admin-field textarea {
+        .post-field input, .post-field textarea {
             width: 100%; padding: 10px 12px;
-            background: var(--surface); border: 1px solid var(--border);
+            background: var(--surface2); border: 1px solid var(--border);
             border-radius: 3px; color: var(--text);
             font-family: 'Inter', sans-serif; font-size: .85rem;
             outline: none; transition: all .2s;
         }
-        .admin-field input:focus, .admin-field textarea:focus {
+        .post-field input:focus, .post-field textarea:focus {
             border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan);
         }
-        .admin-field textarea { min-height: 80px; resize: vertical; }
+        .post-field textarea { min-height: 80px; resize: vertical; }
         
         .screenshot-upload {
             display: flex; gap: 8px; flex-wrap: wrap;
@@ -277,11 +379,27 @@
         }
         .site-footer span { color: var(--cyan); opacity: .7; }
 
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 6px; padding: 10px 18px;
+            font-family: 'JetBrains Mono', monospace; font-size: .75rem;
+            color: var(--text); z-index: 3000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            opacity: 0; transition: opacity 0.25s; pointer-events: none;
+            max-width: 90vw; text-align: center;
+        }
+        .toast.show { opacity: 1; }
+        .toast.error { border-color: var(--red); color: var(--red); }
+        .toast.success { border-color: var(--green); color: var(--green); }
+
         @media (max-width:640px) {
             h1 { font-size:1.6rem; letter-spacing:4px; }
             .header-stats { gap:14px; flex-wrap:wrap; justify-content:center; }
             .btn { padding:7px 12px; font-size:.7rem; }
-            .screenshot-gallery { height: 160px; }
+            .screenshot-gallery { height: 180px; }
+            .modal { width: 96%; }
         }
         @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
     </style>
@@ -289,7 +407,7 @@
 <body>
     <div id="bg-overlay"></div>
 
-    <button class="admin-toggle" id="adminToggle" onclick="toggleAdmin()">⚙ SETTINGS</button>
+    <button class="settings-toggle" id="settingsToggle" onclick="openSettings()">⚙ SETTINGS</button>
 
     <div class="container">
         <header>
@@ -302,31 +420,23 @@
             </div>
         </header>
 
-        <!-- Admin Panel -->
-        <div class="admin-panel" id="adminPanel">
-            <h3>⚡ Admin Mode</h3>
-            <div class="admin-field">
-                <label>GitHub Repo (e.g., Charles2339/Just-Games)</label>
-                <input type="text" id="adminRepo" placeholder="username/repo-name">
+        <!-- Post Panel (Admin Only) -->
+        <div class="post-panel" id="postPanel">
+            <h3>⚡ Post New Game</h3>
+            <div class="post-field">
+                <label>Game Name *</label>
+                <input type="text" id="postName" placeholder="e.g., Celeste Classic">
             </div>
-            <div class="admin-field">
-                <label>GitHub Token (classic, with repo scope)</label>
-                <input type="password" id="adminToken" placeholder="ghp_xxxxxxxxxxxx">
-            </div>
-            <div class="admin-field">
-                <label>Game Name</label>
-                <input type="text" id="gameName" placeholder="e.g., Celeste Classic">
-            </div>
-            <div class="admin-field">
+            <div class="post-field">
                 <label>Description</label>
-                <textarea id="gameDesc" placeholder="Short description of the game..."></textarea>
+                <textarea id="postDesc" placeholder="Short description of the game..."></textarea>
             </div>
-            <div class="admin-field">
-                <label>Download Link (MEGA, mediafire, etc.)</label>
-                <input type="url" id="gameLink" placeholder="https://mega.nz/file/...">
+            <div class="post-field">
+                <label>Download Link (MEGA, MediaFire, etc.) *</label>
+                <input type="url" id="postLink" placeholder="https://mega.nz/file/...">
             </div>
-            <div class="admin-field">
-                <label>Screenshots (2-5 images, drag or click)</label>
+            <div class="post-field">
+                <label>Screenshots (1-5 images, click + to add)</label>
                 <div class="screenshot-upload" id="screenshotUpload">
                     <div class="screenshot-preview" onclick="document.getElementById('screenshotInput').click()">
                         <span>+</span>
@@ -351,32 +461,116 @@
         <footer class="site-footer"><span>©2026 MKDEV</span></footer>
     </div>
 
+    <!-- SETTINGS MODAL -->
+    <div class="overlay" id="settingsOverlay" onclick="overlayClick(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>⚙ Settings</h3>
+                <button class="modal-close" onclick="closeSettings()">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- GitHub Config -->
+                <div class="setting-group">
+                    <label>GitHub Repository</label>
+                    <input type="text" id="settingRepo" placeholder="username/repo-name (e.g., Charles2339/Just-Games)">
+                    <p class="desc">The repo where games.json and screenshots are stored.</p>
+                </div>
+                <div class="setting-group">
+                    <label>Branch</label>
+                    <input type="text" id="settingBranch" placeholder="main" value="main">
+                    <p class="desc">Default branch to read from and push to.</p>
+                </div>
+                <hr class="divider">
+                <!-- Admin Mode -->
+                <div class="setting-group admin-section">
+                    <label>Admin Mode &nbsp;<span class="admin-badge disabled" id="adminBadge">Disabled</span></label>
+                    <div id="adminStep0">
+                        <p class="desc">Enable admin mode to post new games directly to your repo via GitHub API.</p>
+                        <button class="admin-btn" onclick="adminShowPass()">🔐 Enable Admin Mode</button>
+                    </div>
+                    <div id="adminStep1" style="display:none">
+                        <p class="desc">Enter the admin password:</p>
+                        <div class="admin-input-row">
+                            <input type="password" id="adminPassInput" class="admin-input" placeholder="Password..." onkeydown="if(event.key==='Enter')adminVerifyPass()">
+                            <button class="admin-btn-sm" onclick="adminVerifyPass()">Unlock</button>
+                        </div>
+                        <p id="adminPassErr" class="desc" style="color:var(--red);display:none;margin-top:6px">❌ Wrong password.</p>
+                    </div>
+                    <div id="adminStep2" style="display:none">
+                        <p class="desc">Paste your GitHub Personal Access Token (needs <code>repo</code> or <code>public_repo</code> scope):</p>
+                        <div class="admin-input-row">
+                            <input type="password" id="adminTokenInput" class="admin-input" placeholder="ghp_... or github_pat_..." onkeydown="if(event.key==='Enter')adminSaveToken()">
+                            <button class="admin-btn-sm" onclick="adminSaveToken()">Save</button>
+                        </div>
+                        <p class="desc" style="margin-top:5px">Stored in browser localStorage only. Never sent anywhere except GitHub API.</p>
+                    </div>
+                    <div id="adminStep3" style="display:none">
+                        <div class="admin-active-row">
+                            <span>🔓 Admin mode active — can post games & upload screenshots.</span>
+                            <button class="admin-btn-danger" onclick="adminDisable()">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div class="setting-group">
+                    <label>About</label>
+                    <p class="desc">MK-GAMING-ARCHIVE v2.0 — built by <a href="https://www.facebook.com/CHARLESBANEMK" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none">Charles MK</a>.<br>Games data stored in your GitHub repo. Screenshots served via GitHub raw CDN.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
     <script>
     // ── CONFIG ────────────────────────────────────────────────────────
-    const CONFIG = {
+    const DEFAULT_CONFIG = {
         owner: 'Charles2339',
         repo:  'Just-Games',
         branch: 'main',
         gamesJson: 'games.json'
     };
 
+    const ADMIN_PASS = 'bane12!!!?';
+
     let games = [];
     let adminScreenshots = [];
     let isAdmin = false;
 
+    // DOM refs
     const searchInput = document.getElementById('searchInput');
     const gamesList   = document.getElementById('gamesList');
     const gameCount   = document.getElementById('gameCount');
     const statTotal   = document.getElementById('statTotal');
     const statNow     = document.getElementById('statNow');
-    const adminPanel  = document.getElementById('adminPanel');
-    const adminToggle = document.getElementById('adminToggle');
+    const postPanel   = document.getElementById('postPanel');
+    const settingsToggle = document.getElementById('settingsToggle');
+
+    // ── CONFIG HELPERS ───────────────────────────────────────────────
+    function getConfig() {
+        const repo = localStorage.getItem('mkg_repo') || `${DEFAULT_CONFIG.owner}/${DEFAULT_CONFIG.repo}`;
+        const parts = repo.split('/');
+        return {
+            owner: parts[0] || DEFAULT_CONFIG.owner,
+            repo: parts[1] || DEFAULT_CONFIG.repo,
+            branch: localStorage.getItem('mkg_branch') || DEFAULT_CONFIG.branch,
+            gamesJson: DEFAULT_CONFIG.gamesJson
+        };
+    }
+
+    function setConfig(repo, branch) {
+        if (repo) localStorage.setItem('mkg_repo', repo);
+        if (branch) localStorage.setItem('mkg_branch', branch);
+    }
 
     // ── LOAD GAMES ───────────────────────────────────────────────────
     async function loadGames() {
+        const cfg = getConfig();
         try {
-            const url = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.gamesJson}`;
-            const res = await fetch(url);
+            const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${cfg.gamesJson}`;
+            const res = await fetch(url, { cache: 'no-store' });
             if (!res.ok) throw new Error('No games.json yet');
             games = await res.json();
         } catch (e) {
@@ -389,7 +583,7 @@
 
     function displayGames(list) {
         if (!list.length) {
-            gamesList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#9678;</div><h3>No games</h3><p>Archive is empty. Use Settings to add games.</p></div>`;
+            gamesList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#9678;</div><h3>No games</h3><p>Archive is empty. Open Settings to configure your repo and add games.</p></div>`;
             gameCount.textContent = '0 games found';
             return;
         }
@@ -402,7 +596,7 @@
                     <div class="game-meta">${game.platform || 'PC'} · ${formatSize(game.size)} · ${timeAgo(game.uploaded)}</div>
                     <div class="game-desc">${escapeHtml(game.description || 'No description available.')}</div>
                     <div class="game-actions">
-                        <a href="${game.downloadUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-download">
+                        <a href="${escapeHtml(game.downloadUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-download">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M6 11l6 6 6-6"/><path d="M3 20h18"/></svg>
                             DOWNLOAD
                         </a>
@@ -412,8 +606,6 @@
         `).join('');
         
         gameCount.textContent = `${list.length} game${list.length !== 1 ? 's' : ''} indexed`;
-        
-        // Init galleries after render
         list.forEach((game, i) => initGallery(i));
     }
 
@@ -424,7 +616,7 @@
         
         const slides = screenshots.map((url, si) => `
             <div class="screenshot-slide" data-slide="${si}">
-                <img src="${url}" alt="Screenshot ${si+1}" loading="lazy">
+                <img src="${escapeHtml(url)}" alt="Screenshot ${si+1}" loading="lazy" draggable="false">
             </div>
         `).join('');
         
@@ -432,10 +624,15 @@
             <div class="screenshot-dot ${si === 0 ? 'active' : ''}" data-dot="${si}" onclick="goToSlide(${gameIndex}, ${si})"></div>
         `).join('');
         
+        const counter = screenshots.length > 1 
+            ? `<div class="screenshot-counter" id="counter-${gameIndex}">1 / ${screenshots.length}</div>` 
+            : '';
+        
         return `
             <div class="screenshot-gallery" id="gallery-${gameIndex}">
                 <div class="screenshot-track" id="track-${gameIndex}">${slides}</div>
                 <div class="screenshot-dots">${dots}</div>
+                ${counter}
                 ${screenshots.length > 1 ? `
                     <div class="screenshot-nav prev" onclick="prevSlide(${gameIndex})">&#9664;</div>
                     <div class="screenshot-nav next" onclick="nextSlide(${gameIndex})">&#9654;</div>
@@ -451,21 +648,19 @@
         const track = document.getElementById(`track-${index}`);
         if (!track) return;
         
-        galleryState[index] = { current: 0, touchStart: 0 };
+        galleryState[index] = { current: 0, touchStart: 0, touchEnd: 0 };
         const gallery = document.getElementById(`gallery-${index}`);
         const slides = gallery.querySelectorAll('.screenshot-slide');
         galleryState[index].max = slides.length - 1;
         
         // Touch swipe
         gallery.addEventListener('touchstart', e => {
-            galleryState[index].touchStart = e.touches[0].clientX;
+            galleryState[index].touchStart = e.changedTouches[0].screenX;
         }, { passive: true });
         
         gallery.addEventListener('touchend', e => {
-            const diff = galleryState[index].touchStart - e.changedTouches[0].clientX;
-            if (Math.abs(diff) > 50) {
-                diff > 0 ? nextSlide(index) : prevSlide(index);
-            }
+            galleryState[index].touchEnd = e.changedTouches[0].screenX;
+            handleSwipe(index);
         }, { passive: true });
         
         // Mouse drag
@@ -493,6 +688,15 @@
         });
     }
 
+    function handleSwipe(index) {
+        const state = galleryState[index];
+        if (!state) return;
+        const diff = state.touchStart - state.touchEnd;
+        if (Math.abs(diff) > 50) {
+            diff > 0 ? nextSlide(index) : prevSlide(index);
+        }
+    }
+
     function goToSlide(galleryIndex, slideIndex) {
         const state = galleryState[galleryIndex];
         if (!state) return;
@@ -517,24 +721,106 @@
     function updateGallery(index) {
         const track = document.getElementById(`track-${index}`);
         const dots = document.querySelectorAll(`#gallery-${index} .screenshot-dot`);
+        const counter = document.getElementById(`counter-${index}`);
         if (!track) return;
         
         track.style.transform = `translateX(-${galleryState[index].current * 100}%)`;
         dots.forEach((d, i) => d.classList.toggle('active', i === galleryState[index].current));
+        if (counter) counter.textContent = `${galleryState[index].current + 1} / ${galleryState[index].max + 1}`;
     }
 
-    // ── ADMIN MODE ───────────────────────────────────────────────────
-    function toggleAdmin() {
-        isAdmin = !isAdmin;
-        adminPanel.classList.toggle('active', isAdmin);
-        adminToggle.textContent = isAdmin ? '✕ CLOSE' : '⚙ SETTINGS';
-        adminToggle.style.color = isAdmin ? 'var(--red)' : '';
+    // ── SETTINGS / ADMIN MODE ────────────────────────────────────────
+    function openSettings() {
+        const cfg = getConfig();
+        document.getElementById('settingRepo').value = `${cfg.owner}/${cfg.repo}`;
+        document.getElementById('settingBranch').value = cfg.branch;
+        updateAdminUI();
+        document.getElementById('settingsOverlay').classList.add('open');
     }
 
+    function closeSettings() {
+        const repo = document.getElementById('settingRepo').value.trim();
+        const branch = document.getElementById('settingBranch').value.trim() || 'main';
+        if (repo && repo.includes('/')) setConfig(repo, branch);
+        document.getElementById('settingsOverlay').classList.remove('open');
+        loadGames();
+    }
+
+    function overlayClick(e) { if (e.target === e.currentTarget) closeSettings(); }
+
+    function isAdminActive() { return !!localStorage.getItem('mkg_gh_token'); }
+
+    function updateAdminUI() {
+        const active = isAdminActive();
+        const badge = document.getElementById('adminBadge');
+        badge.textContent = active ? 'Active' : 'Disabled';
+        badge.className = 'admin-badge ' + (active ? 'active' : 'disabled');
+        document.getElementById('adminStep0').style.display = active ? 'none' : '';
+        document.getElementById('adminStep1').style.display = 'none';
+        document.getElementById('adminStep2').style.display = 'none';
+        document.getElementById('adminStep3').style.display = active ? '' : 'none';
+        
+        if (active) {
+            postPanel.classList.add('active');
+            settingsToggle.textContent = '✕ CLOSE POST';
+            settingsToggle.onclick = togglePostPanel;
+        } else {
+            postPanel.classList.remove('active');
+            settingsToggle.textContent = '⚙ SETTINGS';
+            settingsToggle.onclick = openSettings;
+        }
+    }
+
+    function togglePostPanel() {
+        postPanel.classList.toggle('active');
+        settingsToggle.textContent = postPanel.classList.contains('active') ? '✕ CLOSE POST' : '⚙ SETTINGS';
+        settingsToggle.onclick = postPanel.classList.contains('active') ? togglePostPanel : openSettings;
+    }
+
+    function adminShowPass() {
+        document.getElementById('adminStep0').style.display = 'none';
+        document.getElementById('adminStep1').style.display = '';
+        document.getElementById('adminPassInput').value = '';
+        document.getElementById('adminPassErr').style.display = 'none';
+        setTimeout(() => document.getElementById('adminPassInput').focus(), 60);
+    }
+
+    function adminVerifyPass() {
+        const pass = document.getElementById('adminPassInput').value;
+        if (pass !== ADMIN_PASS) {
+            document.getElementById('adminPassErr').style.display = '';
+            document.getElementById('adminPassInput').value = '';
+            document.getElementById('adminPassInput').focus();
+            return;
+        }
+        document.getElementById('adminStep1').style.display = 'none';
+        document.getElementById('adminStep2').style.display = '';
+        setTimeout(() => document.getElementById('adminTokenInput').focus(), 60);
+    }
+
+    function adminSaveToken() {
+        const token = document.getElementById('adminTokenInput').value.trim();
+        if (!token) { showToast('Please enter a token', 'error'); return; }
+        localStorage.setItem('mkg_gh_token', token);
+        document.getElementById('adminTokenInput').value = '';
+        updateAdminUI();
+        showToast('✅ Admin mode enabled', 'success');
+    }
+
+    function adminDisable() {
+        if (!confirm('Disable admin mode? This clears the stored token.')) return;
+        localStorage.removeItem('mkg_gh_token');
+        updateAdminUI();
+        showToast('Admin mode disabled');
+    }
+
+    // ── POST GAME (GitHub API) ─────────────────────────────────────
     function handleScreenshots(input) {
         const files = Array.from(input.files);
-        const container = document.getElementById('screenshotUpload');
-        
+        if (adminScreenshots.length + files.length > 5) {
+            showToast('Max 5 screenshots allowed', 'error');
+            return;
+        }
         files.forEach(file => {
             if (!file.type.startsWith('image/')) return;
             const reader = new FileReader();
@@ -544,6 +830,7 @@
             };
             reader.readAsDataURL(file);
         });
+        input.value = '';
     }
 
     function renderScreenshotPreviews() {
@@ -566,16 +853,21 @@
     }
 
     async function postGame() {
-        const repo = document.getElementById('adminRepo').value.trim();
-        const token = document.getElementById('adminToken').value.trim();
-        const name = document.getElementById('gameName').value.trim();
-        const desc = document.getElementById('gameDesc').value.trim();
-        const link = document.getElementById('gameLink').value.trim();
+        const cfg = getConfig();
+        const token = localStorage.getItem('mkg_gh_token');
+        const name = document.getElementById('postName').value.trim();
+        const desc = document.getElementById('postDesc').value.trim();
+        const link = document.getElementById('postLink').value.trim();
         const status = document.getElementById('postStatus');
         const btn = document.getElementById('postBtn');
         
-        if (!repo || !token || !name || !link) {
-            status.innerHTML = '<span style="color:var(--red)">Fill all required fields</span>';
+        if (!token) { showToast('Admin mode not enabled', 'error'); return; }
+        if (!name || !link) {
+            status.innerHTML = '<span style="color:var(--red)">Game name and download link are required</span>';
+            return;
+        }
+        if (adminScreenshots.length === 0) {
+            status.innerHTML = '<span style="color:var(--red)">At least 1 screenshot is required</span>';
             return;
         }
         
@@ -583,48 +875,59 @@
         status.innerHTML = '<span style="color:var(--cyan)">Uploading screenshots...</span>';
         
         try {
-            // Upload screenshots to repo
+            // 1. Upload screenshots to repo
             const screenshotUrls = [];
+            const safeName = name.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '');
+            
             for (let i = 0; i < adminScreenshots.length; i++) {
                 const s = adminScreenshots[i];
                 const base64 = s.dataUrl.split(',')[1];
-                const path = `screenshots/${name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}/${Date.now()}-${i}.jpg`;
+                const path = `screenshots/${safeName}/${Date.now()}-${i}.png`;
                 
-                const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+                const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}`, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json'
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json',
+                        'X-GitHub-Api-Version': '2022-11-28'
                     },
                     body: JSON.stringify({
                         message: `Add screenshot for ${name}`,
-                        content: base64
+                        content: base64,
+                        branch: cfg.branch
                     })
                 });
                 
-                if (!res.ok) throw new Error(`Screenshot ${i+1} failed`);
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(`Screenshot ${i+1} failed: ${res.status} ${err.message || res.statusText}`);
+                }
                 const data = await res.json();
-                screenshotUrls.push(data.content.download_url);
+                screenshotUrls.push(`https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}`);
             }
             
-            // Fetch current games.json
+            // 2. Fetch current games.json
             status.innerHTML = '<span style="color:var(--cyan)">Updating games.json...</span>';
             let currentGames = [];
             let sha = null;
             
             try {
-                const res = await fetch(`https://api.github.com/repos/${repo}/contents/${CONFIG.gamesJson}?ref=${CONFIG.branch}`, {
-                    headers: { 'Authorization': `token ${token}` }
+                const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.gamesJson)}?ref=${cfg.branch}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github+json'
+                    }
                 });
                 if (res.ok) {
                     const data = await res.json();
                     sha = data.sha;
-                    currentGames = JSON.parse(atob(data.content));
+                    currentGames = JSON.parse(atob(data.content.replace(/\s/g, '')));
                 }
             } catch (e) { /* no games.json yet */ }
             
-            // Add new game
-            currentGames.push({
+            // 3. Add new game
+            currentGames.unshift({
                 name,
                 description: desc,
                 downloadUrl: link,
@@ -634,28 +937,49 @@
                 uploaded: new Date().toISOString()
             });
             
-            // Push updated games.json
-            const updateRes = await fetch(`https://api.github.com/repos/${repo}/contents/${CONFIG.gamesJson}`, {
+            // 4. Push updated games.json
+            const updateRes = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.gamesJson)}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/vnd.github+json',
+                    'Content-Type': 'application/json',
+                    'X-GitHub-Api-Version': '2022-11-28'
                 },
                 body: JSON.stringify({
                     message: `Add game: ${name}`,
-                    content: btoa(JSON.stringify(currentGames, null, 2)),
-                    sha: sha
+                    content: btoa(unescape(encodeURIComponent(JSON.stringify(currentGames, null, 2)))),
+                    sha: sha,
+                    branch: cfg.branch
                 })
             });
             
-            if (!updateRes.ok) throw new Error('Failed to update games.json');
+            if (!updateRes.ok) {
+                const err = await updateRes.json().catch(() => ({}));
+                throw new Error(`Failed to update games.json: ${updateRes.status} ${err.message || ''}`);
+            }
             
             status.innerHTML = '<span style="color:var(--green)">✓ Posted successfully! Reloading...</span>';
-            setTimeout(() => location.reload(), 2000);
+            showToast('Game posted successfully!', 'success');
+            
+            // Clear form
+            document.getElementById('postName').value = '';
+            document.getElementById('postDesc').value = '';
+            document.getElementById('postLink').value = '';
+            adminScreenshots = [];
+            renderScreenshotPreviews();
+            
+            setTimeout(() => {
+                status.innerHTML = '';
+                btn.disabled = false;
+                loadGames();
+            }, 2000);
             
         } catch (e) {
-            status.innerHTML = `<span style="color:var(--red)">✗ ${e.message}</span>`;
+            console.error('Post error:', e);
+            status.innerHTML = `<span style="color:var(--red)">✗ ${escapeHtml(e.message)}</span>`;
             btn.disabled = false;
+            showToast(e.message, 'error');
         }
     }
 
@@ -689,6 +1013,15 @@
         return Math.floor(months / 12) + 'y ago';
     }
 
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast' + (type ? ' ' + type : '');
+        t.classList.add('show');
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
     searchInput.addEventListener('input', e => {
         const q = e.target.value.toLowerCase().trim();
         displayGames(q ? games.filter(g => g.name.toLowerCase().includes(q)) : games);
@@ -696,6 +1029,7 @@
 
     // ── INIT ─────────────────────────────────────────────────────────
     loadGames();
+    updateAdminUI();
     </script>
 </body>
 </html>
