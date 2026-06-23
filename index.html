@@ -123,8 +123,22 @@
             background:rgba(13,21,32,0.80); backdrop-filter:blur(10px);
             border:1px solid var(--border); border-radius:4px;
             overflow:hidden; transition:border-color .2s, box-shadow .2s;
+            position: relative;
         }
         .game-card:hover { border-color:rgba(0,212,255,0.4); box-shadow:0 0 20px var(--cyan-glow2); }
+
+        /* Admin delete button */
+        .game-delete-btn {
+            position: absolute; top: 8px; right: 8px; z-index: 10;
+            width: 28px; height: 28px; border-radius: 4px;
+            background: rgba(255,56,96,0.15); border: 1px solid rgba(255,56,96,0.3);
+            color: var(--red); cursor: pointer; display: none;
+            align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace; font-size: .9rem;
+            transition: all .2s;
+        }
+        .game-card:hover .game-delete-btn { display: flex; }
+        .game-delete-btn:hover { background: var(--red); color: var(--bg); }
 
         /* ── SCREENSHOT GALLERY ─────────────────────────────────────── */
         .screenshot-gallery {
@@ -205,7 +219,7 @@
         .overlay.open { display: flex; }
         .modal {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 8px; width: 92%; max-width: 520px;
+            border-radius: 8px; width: 92%; max-width: 420px;
             max-height: 90vh; overflow-y: auto;
             box-shadow: 0 24px 64px rgba(0,212,255,0.08);
             animation: modalIn 0.2s ease;
@@ -228,28 +242,7 @@
         }
         .modal-close:hover { background: var(--surface2); color: var(--text); }
         .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
-        .setting-group label {
-            display: block; font-family: 'JetBrains Mono', monospace;
-            font-size: .6rem; color: var(--text-muted);
-            letter-spacing: 1.5px; text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .setting-group input, .setting-group textarea {
-            width: 100%; padding: 10px 12px;
-            background: var(--surface2); border: 1px solid var(--border);
-            border-radius: 4px; color: var(--text);
-            font-family: 'Inter', sans-serif; font-size: .85rem;
-            outline: none; transition: all .2s;
-        }
-        .setting-group input:focus, .setting-group textarea:focus {
-            border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan);
-        }
-        .setting-group textarea { min-height: 80px; resize: vertical; }
-        .setting-group .desc {
-            font-size: .75rem; color: var(--text-muted); margin-top: 6px; line-height: 1.5;
-        }
-        
-        .admin-section { margin-top: 8px; }
+
         .admin-badge {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 3px 10px; border-radius: 20px; font-size: .65rem; font-weight: 600;
@@ -258,33 +251,40 @@
         .admin-badge.active { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
         
         .admin-btn {
-            padding: 9px 16px; background: var(--cyan-glow); border: 1px solid var(--cyan);
+            width: 100%; padding: 12px;
+            background: var(--cyan-glow); border: 1px solid var(--cyan);
             border-radius: 4px; color: var(--cyan); font-family: 'JetBrains Mono', monospace;
-            font-size: .7rem; font-weight: 600; letter-spacing: 1px; cursor: pointer;
-            transition: all .15s; margin-top: 10px;
+            font-size: .8rem; font-weight: 600; letter-spacing: 1px; cursor: pointer;
+            transition: all .15s; text-transform: uppercase;
         }
         .admin-btn:hover { background: var(--cyan); color: var(--bg); }
         .admin-btn-sm {
-            padding: 7px 14px; background: var(--cyan); border: none; border-radius: 4px;
-            color: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: .7rem;
+            padding: 8px 16px; background: var(--cyan); border: none; border-radius: 4px;
+            color: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: .75rem;
             font-weight: 600; cursor: pointer; transition: opacity .15s; flex-shrink: 0;
         }
         .admin-btn-sm:hover { opacity: .85; }
         .admin-btn-danger {
-            padding: 6px 12px; background: rgba(255,56,96,0.1); border: 1px solid rgba(255,56,96,0.3);
-            border-radius: 4px; color: var(--red); font-size: .7rem; font-family: 'JetBrains Mono', monospace;
-            cursor: pointer; transition: background .15s;
+            padding: 8px 16px; background: rgba(255,56,96,0.1); border: 1px solid rgba(255,56,96,0.3);
+            border-radius: 4px; color: var(--red); font-size: .75rem; font-family: 'JetBrains Mono', monospace;
+            cursor: pointer; transition: background .15s; width: 100%; text-transform: uppercase;
+            font-weight: 600; letter-spacing: 1px;
         }
         .admin-btn-danger:hover { background: rgba(255,56,96,0.2); }
         .admin-input-row { display: flex; gap: 8px; margin-top: 8px; }
-        .admin-input { flex: 1; }
+        .admin-input {
+            flex: 1; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 4px; padding: 10px 12px; color: var(--text);
+            font-family: 'Inter', sans-serif; font-size: .85rem; outline: none;
+            transition: border-color .2s;
+        }
+        .admin-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
         .admin-active-row {
             display: flex; align-items: center; justify-content: space-between;
             gap: 10px; padding: 10px 12px; background: rgba(0,255,136,0.06);
             border: 1px solid rgba(0,255,136,0.15); border-radius: 6px;
-            font-size: .8rem; color: var(--text); margin-top: 8px;
+            font-size: .8rem; color: var(--text); margin-bottom: 12px;
         }
-        .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
 
         /* ── POST PANEL (Admin Only) ────────────────────────────────── */
         .post-panel {
@@ -308,17 +308,28 @@
             letter-spacing: 1px; text-transform: uppercase;
             margin-bottom: 6px;
         }
-        .post-field input, .post-field textarea {
+        .post-field input, .post-field textarea, .post-field select {
             width: 100%; padding: 10px 12px;
             background: var(--surface2); border: 1px solid var(--border);
             border-radius: 3px; color: var(--text);
             font-family: 'Inter', sans-serif; font-size: .85rem;
             outline: none; transition: all .2s;
         }
-        .post-field input:focus, .post-field textarea:focus {
+        .post-field input:focus, .post-field textarea:focus, .post-field select:focus {
             border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan);
         }
         .post-field textarea { min-height: 80px; resize: vertical; }
+        .post-field select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%233A5A78' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center;
+            padding-right: 32px;
+        }
+        .post-field select option { background: var(--surface2); color: var(--text); }
+        .post-field .desc {
+            font-size: .7rem; color: var(--text-muted); margin-top: 4px;
+        }
         
         .screenshot-upload {
             display: flex; gap: 8px; flex-wrap: wrap;
@@ -394,12 +405,33 @@
         .toast.error { border-color: var(--red); color: var(--red); }
         .toast.success { border-color: var(--green); color: var(--green); }
 
+        /* ── PLATFORM TABS ───────────────────────────────────────────── */
+        .platform-tabs {
+            display: flex; gap: 8px; margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .platform-tab {
+            padding: 8px 18px; border-radius: 4px;
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+            font-size: .7rem; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer; transition: all .2s;
+            flex: 1; text-align: center;
+        }
+        .platform-tab:hover { border-color: var(--cyan); color: var(--cyan); }
+        .platform-tab.active {
+            background: var(--cyan-glow); border-color: var(--cyan);
+            color: var(--cyan); box-shadow: 0 0 12px var(--cyan-glow2);
+        }
+
         @media (max-width:640px) {
             h1 { font-size:1.6rem; letter-spacing:4px; }
             .header-stats { gap:14px; flex-wrap:wrap; justify-content:center; }
             .btn { padding:7px 12px; font-size:.7rem; }
             .screenshot-gallery { height: 180px; }
             .modal { width: 96%; }
+            .platform-tab { padding: 7px 10px; font-size: .6rem; }
         }
         @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
     </style>
@@ -413,7 +445,7 @@
         <header>
             <div class="header-tag">[ <span>sys://mkdev.games</span> ] — initialized</div>
             <h1 data-text="MK-GAMING-ARCHIVE">MK-GAMING-ARCHIVE</h1>
-            <p class="subtitle">Indie · Retro · Mods</p>
+            <p class="subtitle">Android · Emulator · PC</p>
             <div class="header-stats">
                 <div class="stat"><span class="stat-val" id="statTotal">—</span>games loaded</div>
                 <div class="stat"><span class="stat-val" id="statNow">—</span>available</div>
@@ -426,6 +458,19 @@
             <div class="post-field">
                 <label>Game Name *</label>
                 <input type="text" id="postName" placeholder="e.g., Celeste Classic">
+            </div>
+            <div class="post-field">
+                <label>Platform *</label>
+                <select id="postPlatform" onchange="onPlatformChange()">
+                    <option value="android">Android</option>
+                    <option value="emulator">Emulator</option>
+                    <option value="windows">Windows</option>
+                </select>
+            </div>
+            <div class="post-field" id="emulatorField" style="display:none">
+                <label>Emulator Name *</label>
+                <input type="text" id="postEmulator" placeholder="e.g., PPSSPP, Dolphin, Citra">
+                <p class="desc">Required when platform is Emulator</p>
             </div>
             <div class="post-field">
                 <label>Description</label>
@@ -453,6 +498,14 @@
             <input type="text" class="search-input" id="searchInput" placeholder="search games...">
         </div>
 
+        <!-- Platform Filter Tabs -->
+        <div class="platform-tabs" id="platformTabs">
+            <div class="platform-tab active" data-platform="all" onclick="filterPlatform('all')">All</div>
+            <div class="platform-tab" data-platform="android" onclick="filterPlatform('android')">Android</div>
+            <div class="platform-tab" data-platform="emulator" onclick="filterPlatform('emulator')">Emulator</div>
+            <div class="platform-tab" data-platform="windows" onclick="filterPlatform('windows')">Windows</div>
+        </div>
+
         <div class="game-count" id="gameCount">scanning archive...</div>
         <div class="games-list" id="gamesList">
             <div class="loading"><div class="spinner"></div><p>loading game matrix...</p></div>
@@ -471,52 +524,32 @@
                 </button>
             </div>
             <div class="modal-body">
-                <!-- GitHub Config -->
-                <div class="setting-group">
-                    <label>GitHub Repository</label>
-                    <input type="text" id="settingRepo" placeholder="username/repo-name (e.g., Charles2339/Just-Games)">
-                    <p class="desc">The repo where games.json and screenshots are stored.</p>
-                </div>
-                <div class="setting-group">
-                    <label>Branch</label>
-                    <input type="text" id="settingBranch" placeholder="main" value="main">
-                    <p class="desc">Default branch to read from and push to.</p>
-                </div>
-                <hr class="divider">
-                <!-- Admin Mode -->
                 <div class="setting-group admin-section">
                     <label>Admin Mode &nbsp;<span class="admin-badge disabled" id="adminBadge">Disabled</span></label>
                     <div id="adminStep0">
-                        <p class="desc">Enable admin mode to post new games directly to your repo via GitHub API.</p>
                         <button class="admin-btn" onclick="adminShowPass()">🔐 Enable Admin Mode</button>
                     </div>
                     <div id="adminStep1" style="display:none">
-                        <p class="desc">Enter the admin password:</p>
+                        <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:8px">Enter the admin password:</p>
                         <div class="admin-input-row">
                             <input type="password" id="adminPassInput" class="admin-input" placeholder="Password..." onkeydown="if(event.key==='Enter')adminVerifyPass()">
                             <button class="admin-btn-sm" onclick="adminVerifyPass()">Unlock</button>
                         </div>
-                        <p id="adminPassErr" class="desc" style="color:var(--red);display:none;margin-top:6px">❌ Wrong password.</p>
+                        <p id="adminPassErr" style="color:var(--red);font-size:.75rem;display:none;margin-top:6px">❌ Wrong password.</p>
                     </div>
                     <div id="adminStep2" style="display:none">
-                        <p class="desc">Paste your GitHub Personal Access Token (needs <code>repo</code> or <code>public_repo</code> scope):</p>
+                        <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:8px">Paste your GitHub Personal Access Token:</p>
                         <div class="admin-input-row">
                             <input type="password" id="adminTokenInput" class="admin-input" placeholder="ghp_... or github_pat_..." onkeydown="if(event.key==='Enter')adminSaveToken()">
                             <button class="admin-btn-sm" onclick="adminSaveToken()">Save</button>
                         </div>
-                        <p class="desc" style="margin-top:5px">Stored in browser localStorage only. Never sent anywhere except GitHub API.</p>
                     </div>
                     <div id="adminStep3" style="display:none">
                         <div class="admin-active-row">
-                            <span>🔓 Admin mode active — can post games & upload screenshots.</span>
-                            <button class="admin-btn-danger" onclick="adminDisable()">Disable</button>
+                            <span>🔓 Admin mode active</span>
                         </div>
+                        <button class="admin-btn-danger" onclick="adminDisable()">Disable Admin Mode</button>
                     </div>
-                </div>
-                <hr class="divider">
-                <div class="setting-group">
-                    <label>About</label>
-                    <p class="desc">MK-GAMING-ARCHIVE v2.0 — built by <a href="https://www.facebook.com/CHARLESBANEMK" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none">Charles MK</a>.<br>Games data stored in your GitHub repo. Screenshots served via GitHub raw CDN.</p>
                 </div>
             </div>
         </div>
@@ -537,7 +570,7 @@
 
     let games = [];
     let adminScreenshots = [];
-    let isAdmin = false;
+    let currentPlatform = 'all';
 
     // DOM refs
     const searchInput = document.getElementById('searchInput');
@@ -577,23 +610,51 @@
             games = [];
         }
         statTotal.textContent = games.length;
-        statNow.textContent = games.length;
-        displayGames(games);
+        applyFilters();
+    }
+
+    function getFilteredGames() {
+        let list = games;
+        if (currentPlatform !== 'all') {
+            list = list.filter(g => g.platform === currentPlatform);
+        }
+        const q = searchInput.value.toLowerCase().trim();
+        if (q) {
+            list = list.filter(g => g.name.toLowerCase().includes(q));
+        }
+        return list;
+    }
+
+    function applyFilters() {
+        const list = getFilteredGames();
+        statNow.textContent = list.length;
+        displayGames(list);
+    }
+
+    function filterPlatform(platform) {
+        currentPlatform = platform;
+        document.querySelectorAll('.platform-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.platform === platform);
+        });
+        applyFilters();
     }
 
     function displayGames(list) {
         if (!list.length) {
-            gamesList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#9678;</div><h3>No games</h3><p>Archive is empty. Open Settings to configure your repo and add games.</p></div>`;
+            gamesList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#9678;</div><h3>No games</h3><p>No games found for this platform.</p></div>`;
             gameCount.textContent = '0 games found';
             return;
         }
         
+        const isAdmin = isAdminActive();
+        
         gamesList.innerHTML = list.map((game, i) => `
             <div class="game-card" data-index="${i}">
+                ${isAdmin ? `<button class="game-delete-btn" onclick="deleteGame(${games.indexOf(game)})" title="Delete game">×</button>` : ''}
                 ${renderGallery(game.screenshots, i)}
                 <div class="game-info">
                     <div class="game-title">${escapeHtml(game.name)}</div>
-                    <div class="game-meta">${game.platform || 'PC'} · ${formatSize(game.size)} · ${timeAgo(game.uploaded)}</div>
+                    <div class="game-meta">${formatPlatform(game)} · ${formatSize(game.size)} · ${timeAgo(game.uploaded)}</div>
                     <div class="game-desc">${escapeHtml(game.description || 'No description available.')}</div>
                     <div class="game-actions">
                         <a href="${escapeHtml(game.downloadUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-download">
@@ -607,6 +668,13 @@
         
         gameCount.textContent = `${list.length} game${list.length !== 1 ? 's' : ''} indexed`;
         list.forEach((game, i) => initGallery(i));
+    }
+
+    function formatPlatform(game) {
+        if (game.platform === 'emulator' && game.emulator) {
+            return `${game.emulator} (Emulator)`;
+        }
+        return game.platform ? game.platform.charAt(0).toUpperCase() + game.platform.slice(1) : 'PC';
     }
 
     function renderGallery(screenshots, gameIndex) {
@@ -653,7 +721,6 @@
         const slides = gallery.querySelectorAll('.screenshot-slide');
         galleryState[index].max = slides.length - 1;
         
-        // Touch swipe
         gallery.addEventListener('touchstart', e => {
             galleryState[index].touchStart = e.changedTouches[0].screenX;
         }, { passive: true });
@@ -663,7 +730,6 @@
             handleSwipe(index);
         }, { passive: true });
         
-        // Mouse drag
         let isDragging = false, startX = 0;
         gallery.addEventListener('mousedown', e => {
             isDragging = true; startX = e.clientX;
@@ -729,21 +795,79 @@
         if (counter) counter.textContent = `${galleryState[index].current + 1} / ${galleryState[index].max + 1}`;
     }
 
+    // ── DELETE GAME ──────────────────────────────────────────────────
+    async function deleteGame(gameIndex) {
+        if (!isAdminActive()) { showToast('Admin mode required', 'error'); return; }
+        const game = games[gameIndex];
+        if (!game) return;
+        
+        if (!confirm(`Delete "${game.name}"? This cannot be undone.`)) return;
+        
+        const cfg = getConfig();
+        const token = localStorage.getItem('mkg_gh_token');
+        const status = document.getElementById('postStatus');
+        
+        try {
+            showToast('Deleting game...');
+            
+            // 1. Fetch current games.json
+            let currentGames = [];
+            let sha = null;
+            
+            const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.gamesJson)}?ref=${cfg.branch}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/vnd.github+json'
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                sha = data.sha;
+                currentGames = JSON.parse(atob(data.content.replace(/\s/g, '')));
+            }
+            
+            // 2. Remove the game
+            currentGames.splice(gameIndex, 1);
+            
+            // 3. Push updated games.json
+            const updateRes = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.gamesJson)}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/vnd.github+json',
+                    'Content-Type': 'application/json',
+                    'X-GitHub-Api-Version': '2022-11-28'
+                },
+                body: JSON.stringify({
+                    message: `Delete game: ${game.name}`,
+                    content: btoa(unescape(encodeURIComponent(JSON.stringify(currentGames, null, 2)))),
+                    sha: sha,
+                    branch: cfg.branch
+                })
+            });
+            
+            if (!updateRes.ok) {
+                const err = await updateRes.json().catch(() => ({}));
+                throw new Error(`Failed to update games.json: ${updateRes.status} ${err.message || ''}`);
+            }
+            
+            showToast(`"${game.name}" deleted`, 'success');
+            loadGames();
+            
+        } catch (e) {
+            console.error('Delete error:', e);
+            showToast(e.message, 'error');
+        }
+    }
+
     // ── SETTINGS / ADMIN MODE ────────────────────────────────────────
     function openSettings() {
-        const cfg = getConfig();
-        document.getElementById('settingRepo').value = `${cfg.owner}/${cfg.repo}`;
-        document.getElementById('settingBranch').value = cfg.branch;
         updateAdminUI();
         document.getElementById('settingsOverlay').classList.add('open');
     }
 
     function closeSettings() {
-        const repo = document.getElementById('settingRepo').value.trim();
-        const branch = document.getElementById('settingBranch').value.trim() || 'main';
-        if (repo && repo.includes('/')) setConfig(repo, branch);
         document.getElementById('settingsOverlay').classList.remove('open');
-        loadGames();
     }
 
     function overlayClick(e) { if (e.target === e.currentTarget) closeSettings(); }
@@ -804,6 +928,7 @@
         localStorage.setItem('mkg_gh_token', token);
         document.getElementById('adminTokenInput').value = '';
         updateAdminUI();
+        loadGames(); // re-render to show delete buttons
         showToast('✅ Admin mode enabled', 'success');
     }
 
@@ -811,7 +936,14 @@
         if (!confirm('Disable admin mode? This clears the stored token.')) return;
         localStorage.removeItem('mkg_gh_token');
         updateAdminUI();
+        loadGames(); // re-render to hide delete buttons
         showToast('Admin mode disabled');
+    }
+
+    // ── PLATFORM SELECT IN POST ─────────────────────────────────────
+    function onPlatformChange() {
+        const platform = document.getElementById('postPlatform').value;
+        document.getElementById('emulatorField').style.display = platform === 'emulator' ? '' : 'none';
     }
 
     // ── POST GAME (GitHub API) ─────────────────────────────────────
@@ -856,6 +988,8 @@
         const cfg = getConfig();
         const token = localStorage.getItem('mkg_gh_token');
         const name = document.getElementById('postName').value.trim();
+        const platform = document.getElementById('postPlatform').value;
+        const emulator = document.getElementById('postEmulator').value.trim();
         const desc = document.getElementById('postDesc').value.trim();
         const link = document.getElementById('postLink').value.trim();
         const status = document.getElementById('postStatus');
@@ -864,6 +998,10 @@
         if (!token) { showToast('Admin mode not enabled', 'error'); return; }
         if (!name || !link) {
             status.innerHTML = '<span style="color:var(--red)">Game name and download link are required</span>';
+            return;
+        }
+        if (platform === 'emulator' && !emulator) {
+            status.innerHTML = '<span style="color:var(--red)">Emulator name is required for Emulator platform</span>';
             return;
         }
         if (adminScreenshots.length === 0) {
@@ -875,7 +1013,6 @@
         status.innerHTML = '<span style="color:var(--cyan)">Uploading screenshots...</span>';
         
         try {
-            // 1. Upload screenshots to repo
             const screenshotUrls = [];
             const safeName = name.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '');
             
@@ -903,11 +1040,9 @@
                     const err = await res.json().catch(() => ({}));
                     throw new Error(`Screenshot ${i+1} failed: ${res.status} ${err.message || res.statusText}`);
                 }
-                const data = await res.json();
                 screenshotUrls.push(`https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}`);
             }
             
-            // 2. Fetch current games.json
             status.innerHTML = '<span style="color:var(--cyan)">Updating games.json...</span>';
             let currentGames = [];
             let sha = null;
@@ -926,18 +1061,19 @@
                 }
             } catch (e) { /* no games.json yet */ }
             
-            // 3. Add new game
-            currentGames.unshift({
+            const gameEntry = {
                 name,
+                platform,
                 description: desc,
                 downloadUrl: link,
                 screenshots: screenshotUrls,
-                platform: 'PC',
                 size: 0,
                 uploaded: new Date().toISOString()
-            });
+            };
+            if (platform === 'emulator') gameEntry.emulator = emulator;
             
-            // 4. Push updated games.json
+            currentGames.unshift(gameEntry);
+            
             const updateRes = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.gamesJson)}`, {
                 method: 'PUT',
                 headers: {
@@ -962,12 +1098,14 @@
             status.innerHTML = '<span style="color:var(--green)">✓ Posted successfully! Reloading...</span>';
             showToast('Game posted successfully!', 'success');
             
-            // Clear form
             document.getElementById('postName').value = '';
+            document.getElementById('postPlatform').value = 'android';
+            document.getElementById('postEmulator').value = '';
             document.getElementById('postDesc').value = '';
             document.getElementById('postLink').value = '';
             adminScreenshots = [];
             renderScreenshotPreviews();
+            onPlatformChange();
             
             setTimeout(() => {
                 status.innerHTML = '';
@@ -1022,14 +1160,13 @@
         t._timer = setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    searchInput.addEventListener('input', e => {
-        const q = e.target.value.toLowerCase().trim();
-        displayGames(q ? games.filter(g => g.name.toLowerCase().includes(q)) : games);
-    });
+    searchInput.addEventListener('input', () => applyFilters());
 
     // ── INIT ─────────────────────────────────────────────────────────
     loadGames();
     updateAdminUI();
+    onPlatformChange();
     </script>
 </body>
 </html>
+ 
