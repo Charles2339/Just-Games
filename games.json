@@ -1,5 +1,17 @@
 [
   {
+    "id": "game_1782243693412_hwc5racc",
+    "name": "Summertime Saga - PC",
+    "platform": "windows",
+    "description": "Latest version",
+    "downloadUrl": "https://mega.nz/file/bRFV1YoL#zKTjwSCPqaC_lKshQdaofHxRFfeZ4R3IksxZAiOZU_4",
+    "screenshots": [
+      "https://raw.githubusercontent.com/Charles2339/Just-Games/main/screenshots/summertime-saga-pc_c5racc/0.png"
+    ],
+    "size": 0,
+    "uploaded": "2026-06-23T19:41:35.979Z"
+  },
+  {
     "name": "Summertime Saga",
     "platform": "android",
     "description": "Latest version",
@@ -8,7 +20,8 @@
       "https://raw.githubusercontent.com/Charles2339/Just-Games/main/screenshots/summertime-saga/1782240232975-0.png"
     ],
     "size": 0,
-    "uploaded": "2026-06-23T18:43:55.770Z"
+    "uploaded": "2026-06-23T18:43:55.770Z",
+    "id": "game_1782243695979_0_q2gw0v"
   },
   {
     "name": "Milfy City",
@@ -19,6 +32,7 @@
       "https://raw.githubusercontent.com/Charles2339/Just-Games/main/screenshots/milfy-city/1782240086164-0.png"
     ],
     "size": 0,
-    "uploaded": "2026-06-23T18:41:29.921Z"
+    "uploaded": "2026-06-23T18:41:29.921Z",
+    "id": "game_1782243695979_1_mf9a9f"
   }
 ]
