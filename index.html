@@ -574,6 +574,9 @@
     //  1. Delete used wrong index (filtered vs original array)
     //  2. Upload had no unique game ID, causing overwrites
     //  3. Upload didn't re-fetch SHA before final commit, causing 409s
+    //  4. Delete now also removes screenshots from repo
+    //  5. Post now retries load until game appears (CDN sync)
+    //  6. Load uses stronger cache-busting headers
     // ═══════════════════════════════════════════════════════════════════
 
     const DEFAULT_CONFIG = {
@@ -613,15 +616,23 @@
     async function loadGames() {
         const cfg = getConfig();
         try {
-            const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${cfg.gamesJson}?t=${Date.now()}`;
-            const res = await fetch(url, { cache: 'no-store' });
+            // Use cache-busting timestamp AND force no-cache headers
+            const cacheBuster = Date.now();
+            const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${cfg.gamesJson}?t=${cacheBuster}`;
+            const res = await fetch(url, { 
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+            });
             if (!res.ok) throw new Error('No games.json yet');
-            games = await res.json();
+            const text = await res.text();
+            if (!text.trim()) throw new Error('Empty games.json');
+            games = JSON.parse(text);
             // Ensure every game has an id (for backward compat)
             games.forEach((g, i) => {
                 if (!g.id) g.id = `game_${Date.now()}_${i}_${Math.random().toString(36).slice(2,8)}`;
             });
         } catch (e) {
+            console.error('Load games error:', e);
             games = [];
         }
         statTotal.textContent = games.length;
@@ -846,6 +857,7 @@
             if (liveIndex === -1) throw new Error('Game was already deleted');
             
             const deletedName = currentGames[liveIndex].name;
+            const deletedGame = currentGames[liveIndex];
             currentGames.splice(liveIndex, 1);
             
             // 3. Push updated games.json
@@ -870,14 +882,57 @@
                 throw new Error(`Failed to update games.json: ${updateRes.status} ${err.message || ''}`);
             }
             
+            // 4. Delete screenshots from repo (fire and forget, don't block)
+            if (deletedGame.screenshots && deletedGame.screenshots.length) {
+                deleteScreenshots(deletedGame.screenshots, token, cfg);
+            }
+            
             showToast(`"${deletedName}" deleted`, 'success');
             
-            // 4. Refresh from server (don't trust local state)
-            await loadGames();
+            // 5. Force refresh from server with cache-bust
+            setTimeout(() => loadGames(), 1500);
             
         } catch (e) {
             console.error('Delete error:', e);
             showToast(e.message, 'error');
+        }
+    }
+
+    // ── DELETE SCREENSHOTS FROM REPO ─────────────────────────────────
+    async function deleteScreenshots(urls, token, cfg) {
+        for (const url of urls) {
+            try {
+                // Extract path from raw URL: .../branch/screenshots/...
+                const parts = url.split(`/${cfg.branch}/`);
+                if (parts.length < 2) continue;
+                const path = parts[1];
+                
+                // Get file SHA first
+                const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}?ref=${cfg.branch}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github+json'
+                    }
+                });
+                if (!res.ok) continue;
+                const data = await res.json();
+                
+                // Delete the file
+                await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json',
+                        'X-GitHub-Api-Version': '2022-11-28'
+                    },
+                    body: JSON.stringify({
+                        message: `Delete screenshot: ${path}`,
+                        sha: data.sha,
+                        branch: cfg.branch
+                    })
+                });
+            } catch (e) { /* ignore individual screenshot delete errors */ }
         }
     }
 
@@ -1142,12 +1197,23 @@
             renderScreenshotPreviews();
             onPlatformChange();
             
-            // Wait for GitHub CDN cache, then reload
-            setTimeout(async () => {
-                status.innerHTML = '';
-                btn.disabled = false;
+            // Wait for GitHub CDN cache to clear, then reload with retry
+            let attempts = 0;
+            const tryReload = async () => {
+                attempts++;
                 await loadGames();
-            }, 3000);
+                // Check if our game actually appeared
+                const found = games.some(g => g.id === gameId);
+                if (!found && attempts < 5) {
+                    status.innerHTML = '<span style="color:var(--cyan)">Waiting for CDN sync... (' + attempts + '/5)</span>';
+                    setTimeout(tryReload, 2000);
+                } else {
+                    status.innerHTML = '';
+                    btn.disabled = false;
+                    if (!found) showToast('Game posted but not showing yet. Refresh manually.', 'error');
+                }
+            };
+            setTimeout(tryReload, 3000);
             
         } catch (e) {
             console.error('Post error:', e);
@@ -1205,3 +1271,4 @@
     </script>
 </body>
 </html>
+ 
