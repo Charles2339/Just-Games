@@ -89,6 +89,31 @@
         .stat { font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--text-muted); text-align:center; }
         .stat-val { display:block; font-size:1.1rem; font-weight:600; color:var(--cyan); margin-bottom:2px; }
 
+        .tabs {
+            display: flex; gap: 4px; margin-bottom: 16px;
+            background: rgba(13,21,32,0.85); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 4px; padding: 6px;
+        }
+        .tab-btn {
+            flex: 1; padding: 10px 8px;
+            background: transparent; border: 1px solid transparent;
+            border-radius: 3px; cursor: pointer;
+            font-family: 'JetBrains Mono', monospace; font-size: .72rem;
+            font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text-muted); transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .tab-btn:hover { color: var(--text-dim); border-color: var(--border); }
+        .tab-btn.active {
+            color: var(--bg); background: var(--cyan); border-color: var(--cyan);
+            box-shadow: 0 0 16px var(--cyan-glow), 0 0 30px rgba(0,212,255,0.1);
+        }
+        .tab-badge {
+            font-size: .6rem; background: rgba(0,212,255,0.15); color: var(--cyan);
+            border-radius: 2px; padding: 1px 5px; min-width: 18px; text-align: center;
+        }
+        .tab-btn.active .tab-badge { background: rgba(8,12,16,0.3); color: var(--bg); }
+
         .settings-toggle {
             position: fixed; top: 16px; right: 16px; z-index: 1000;
             background: rgba(13,21,32,0.9); border: 1px solid var(--border);
@@ -452,6 +477,9 @@
             <div class="header-stats">
                 <div class="stat"><span class="stat-val" id="statTotal">—</span>games loaded</div>
                 <div class="stat"><span class="stat-val" id="statNow">—</span>available</div>
+                <div class="stat" style="cursor:pointer" onclick="loadGames(true);showToast('Refreshed')" title="Force refresh from server">
+                    <span class="stat-val" style="font-size:1rem">↻</span>refresh
+                </div>
             </div>
         </header>
 
@@ -613,19 +641,40 @@
     }
 
     // ── LOAD GAMES ───────────────────────────────────────────────────
-    async function loadGames() {
+    async function loadGames(force = false) {
         const cfg = getConfig();
         try {
-            // Use cache-busting timestamp AND force no-cache headers
-            const cacheBuster = Date.now();
-            const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${cfg.gamesJson}?t=${cacheBuster}`;
+            // Truly unique cache buster using random + timestamp
+            const cacheBuster = `${Date.now()}_${Math.random().toString(36).slice(2,10)}`;
+            const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${cfg.gamesJson}?nocache=${cacheBuster}`;
+            
+            // Use no-cors bypass trick for raw.githubusercontent caching
             const res = await fetch(url, { 
                 cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                headers: { 
+                    'Cache-Control': 'no-cache, no-store, must-revalidate', 
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
             });
-            if (!res.ok) throw new Error('No games.json yet');
+            
+            if (res.status === 404) {
+                // games.json doesn't exist yet — that's OK for first post
+                games = [];
+                statTotal.textContent = '0';
+                applyFilters();
+                return;
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            
             const text = await res.text();
-            if (!text.trim()) throw new Error('Empty games.json');
+            if (!text || !text.trim()) {
+                games = [];
+                statTotal.textContent = '0';
+                applyFilters();
+                return;
+            }
+            
             games = JSON.parse(text);
             // Ensure every game has an id (for backward compat)
             games.forEach((g, i) => {
@@ -890,7 +939,7 @@
             showToast(`"${deletedName}" deleted`, 'success');
             
             // 5. Force refresh from server with cache-bust
-            setTimeout(() => loadGames(), 1500);
+            setTimeout(() => loadGames(true), 2000);
             
         } catch (e) {
             console.error('Delete error:', e);
@@ -1201,19 +1250,22 @@
             let attempts = 0;
             const tryReload = async () => {
                 attempts++;
-                await loadGames();
+                await loadGames(true); // force refresh
                 // Check if our game actually appeared
                 const found = games.some(g => g.id === gameId);
-                if (!found && attempts < 5) {
-                    status.innerHTML = '<span style="color:var(--cyan)">Waiting for CDN sync... (' + attempts + '/5)</span>';
-                    setTimeout(tryReload, 2000);
+                if (!found && attempts < 8) {
+                    const delay = Math.min(2000 * attempts, 8000); // exponential backoff: 2s, 4s, 6s, 8s...
+                    status.innerHTML = '<span style="color:var(--cyan)">Waiting for CDN sync... (' + attempts + '/8, retry in ' + (delay/1000) + 's)</span>';
+                    setTimeout(tryReload, delay);
                 } else {
                     status.innerHTML = '';
                     btn.disabled = false;
-                    if (!found) showToast('Game posted but not showing yet. Refresh manually.', 'error');
+                    if (!found) {
+                        showToast('Game posted but CDN still caching. Try refreshing the page.', 'error');
+                    }
                 }
             };
-            setTimeout(tryReload, 3000);
+            setTimeout(tryReload, 2000);
             
         } catch (e) {
             console.error('Post error:', e);
@@ -1271,4 +1323,3 @@
     </script>
 </body>
 </html>
- 
