@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADULT-GAMING</title>
+    <title>Adult Gaming</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -446,8 +446,8 @@
 
     <div class="container">
         <header>
-            <div class="header-tag">[ <span>sys://mkdev.adultgames</span> ] — initialized</div>
-            <h1 data-text="MK-GAMING-ARCHIVE">MK-GAMING-ARCHIVE</h1>
+            <div class="header-tag">[ <span>sys://adult-gaming</span> ] — initialized</div>
+            <h1 data-text="Adult Gaming">Adult Gaming</h1>
             <p class="subtitle">Android · Emulator · PC</p>
             <div class="header-stats">
                 <div class="stat"><span class="stat-val" id="statTotal">—</span>games loaded</div>
@@ -539,15 +539,7 @@
                 <div class="setting-group admin-section">
                     <label>Admin Mode &nbsp;<span class="admin-badge disabled" id="adminBadge">Disabled</span></label>
                     <div id="adminStep0">
-                        <button class="admin-btn" onclick="adminShowPass()">🔐 Enable Admin Mode</button>
-                    </div>
-                    <div id="adminStep1" style="display:none">
-                        <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:8px">Enter the admin password:</p>
-                        <div class="admin-input-row">
-                            <input type="password" id="adminPassInput" class="admin-input" placeholder="Password..." onkeydown="if(event.key==='Enter')adminVerifyPass()">
-                            <button class="admin-btn-sm" onclick="adminVerifyPass()">Unlock</button>
-                        </div>
-                        <p id="adminPassErr" style="color:var(--red);font-size:.75rem;display:none;margin-top:6px">❌ Wrong password.</p>
+                        <button class="admin-btn" onclick="adminShowToken()">🔐 Enable Admin Mode</button>
                     </div>
                     <div id="adminStep2" style="display:none">
                         <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:8px">Paste your GitHub Personal Access Token:</p>
@@ -571,7 +563,7 @@
 
     <script>
     // ═══════════════════════════════════════════════════════════════════
-    //  MK-GAMING-ARCHIVE — FIXED VERSION
+    //  Adult Gaming — FIXED VERSION
     //  Bugs fixed:
     //  1. Delete used wrong index (filtered vs original array)
     //  2. Upload had no unique game ID, causing overwrites
@@ -584,8 +576,6 @@
         branch: 'main',
         gamesJson: 'games.json'
     };
-
-    const ADMIN_PASS = 'bane12!!!?';
 
     let games = [];
     let adminScreenshots = [];
@@ -903,7 +893,6 @@
         badge.textContent = active ? 'Active' : 'Disabled';
         badge.className = 'admin-badge ' + (active ? 'active' : 'disabled');
         document.getElementById('adminStep0').style.display = active ? 'none' : '';
-        document.getElementById('adminStep1').style.display = 'none';
         document.getElementById('adminStep2').style.display = 'none';
         document.getElementById('adminStep3').style.display = active ? '' : 'none';
         
@@ -924,23 +913,8 @@
         settingsToggle.onclick = postPanel.classList.contains('active') ? togglePostPanel : openSettings;
     }
 
-    function adminShowPass() {
+    function adminShowToken() {
         document.getElementById('adminStep0').style.display = 'none';
-        document.getElementById('adminStep1').style.display = '';
-        document.getElementById('adminPassInput').value = '';
-        document.getElementById('adminPassErr').style.display = 'none';
-        setTimeout(() => document.getElementById('adminPassInput').focus(), 60);
-    }
-
-    function adminVerifyPass() {
-        const pass = document.getElementById('adminPassInput').value;
-        if (pass !== ADMIN_PASS) {
-            document.getElementById('adminPassErr').style.display = '';
-            document.getElementById('adminPassInput').value = '';
-            document.getElementById('adminPassInput').focus();
-            return;
-        }
-        document.getElementById('adminStep1').style.display = 'none';
         document.getElementById('adminStep2').style.display = '';
         setTimeout(() => document.getElementById('adminTokenInput').focus(), 60);
     }
